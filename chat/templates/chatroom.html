@@ -14,37 +14,66 @@
 
 <body>
 
-<h2>Hello</h2>
-<h1>Our room is : {{room_name|json_script:"room-name"}}</h1>
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-6">
+                <form>
+                    <div class="form-group">
+                        <label for="exampleFormControlTextarea1" class="h4 pt-5">Chatroom</label>
+                        <textarea class="form-control" id="chat-text" rows="10"></textarea><br>
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" id="input" type="text"></br>
+                    </div>
+                    <input class="btn btn-secondary btn-lg btn-block" id="submit" type="button" value="Send">
+                </form>
+            </div>
+        </div>
+    </div>
 
 
 
-<!-- hear we will show message -->
-<div id="chat-room"></div>
+    {{ room_name|json_script:"room-name" }}
+    <script>
+const userElement = document.getElementById('user_username');
+const user_username = userElement ? JSON.parse(userElement.textContent) : null;
+
+if (user_username !== null) {
+    console.log('Username:', user_username);
+} else {
+    console.error('The user_username element is missing or has no content.');
+}
+        document.querySelector('#submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'username': user_username,
+            }));
+            messageInputDom.value = '';
+        };
 
 
 
-<!-- websocket connection -->
-<script>
-    const roomName = JSON.parse(document.getElementById('room-name').textContent)
-    const chatSocket = new WebSocket(
-        'ws://' + 
-        window.location.host +
-        '/ws/chat/' +
-        roomName +
-        '/'
-    )
 
-    // define what we will do if we got a new message
-    chatSocket.onmessage = function (e) {
-        const data = JSON.parse(e.data)
-        console.log(data);
-        document.querySelector('user-hello').value = (data.tester)
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://' +
+            window.location.host +
+            '/ws/chat/' +
+            roomName +
+            '/'
+        );
+        console.log(chatSocket);
         
-    }
-</script>
 
-
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            console.log(data)
+            document.querySelector('#chat-text').value += (data.username + ': ' + data.message + '\n')
+        }
+    </script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
